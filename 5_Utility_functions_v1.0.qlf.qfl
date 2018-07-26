@@ -1,0 +1,470 @@
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Create_Folder(strFolderName)
+'# Purpose                        : To Create Folder in Mentioned Location
+'# Input Parameters               :	strFolderName 
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+Public Function func_Utility_Create_Folder(strFolderName)
+
+	func_Utility_Create_Folder = False
+	
+	
+	
+	Dim objFso , objCreateFolder
+	
+	Set objFso = createobject("Scripting.Filesystemobject")
+	
+	If Not objFso.FolderExists(strFolderName)Then
+		Set objCreateFolder = objFso.CreateFolder(strFolderName)	
+	End If
+	
+	If objFso.FolderExists(strFolderName) Then
+		func_Utility_Create_Folder = True
+	End If
+	
+	Set objFso = Nothing	
+	Set objCreateFolder = Nothing
+End Function
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Copy_Folder(strSourceFolder , strDestinationFolder)
+'# Purpose                        : To Copy Folder from one Location to another location
+'# Input Parameters               :	strPath
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+Public Function func_Utility_Copy_Folder(strSourceFolder , strDestinationFolder)
+
+	func_Utility_Copy_Folder = False
+	
+	
+	
+	Dim objFso 
+	
+	Set objFso = createobject("Scripting.Filesystemobject")
+	
+	If objFso.FolderExists(strSourceFolder)Then
+		objFso.CopyFolder strSourceFolder , strDestinationFolder , True
+	End If
+	
+	If Not objFso.FolderExists(strDestinationFolder) Then
+		func_Utility_Copy_Folder = True
+	End If
+	
+	
+End Function
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Delete_Folder(strFolderName)
+'# Purpose                        : To Delete Folder from Mentioned Location
+'# Input Parameters               :	strPath
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+Public Function func_Utility_Delete_Folder(strFolderName)
+
+	func_Utility_Delete_Folder = False
+	
+	
+	
+	Dim objFso 
+	
+	Set objFso = createobject("Scripting.Filesystemobject")
+	
+	If objFso.FolderExists(strFolderName)Then
+		objFso.DeleteFolder(strFolderName)	
+	End If
+	
+	If Not objFso.FolderExists(strFolderName) Then
+		func_Utility_Delete_Folder = True
+	End If
+	
+	
+End Function
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Create_File(strFileName)
+'# Purpose                        : To Create File 
+'# Input Parameters               :	strPath
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+
+public Function func_Utility_Create_File(strFileName)
+
+	func_Utility_Create_File = False
+	
+	
+	
+	Dim objFso 
+
+   	Set objFso = CreateObject("Scripting.FileSystemObject")
+   	
+   	objFso.CreateTextFile(strFileName)
+   	
+   	If objFso.FileExists(strFileName) Then
+   		func_Utility_Create_File = True
+   	End If
+   	
+	Set objFso = Nothing	
+		  
+End Function
+
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Delete_File(strFileName)
+'# Purpose                        : To Delete File
+'# Input Parameters               :	strPath
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+
+public Function func_Utility_Delete_File(strFileName)
+
+	func_Utility_Delete_File = False
+	
+	
+	
+	Dim objFso 
+
+   	Set objFso = CreateObject("Scripting.FileSystemObject")
+   	
+   	objFso.DeleteFile(strFileName)
+   	
+   	If Not objFso.FileExists(strFileName) Then
+   		func_Utility_Delete_File = True
+   	End If
+	
+	Set objFso = Nothing
+
+End Function
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Copy_File(strSourceFile , strDestinationFile)
+'# Purpose                        : To Copy File from one location to another location
+'# Input Parameters               :	strSourceFile , strDestinationFile
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+Public Function func_Utility_Copy_File(strSourceFile , strDestinationFile)
+
+	func_Utility_Copy_File = False
+	
+	
+	
+	Dim objFso 
+	
+	Set objFso = createobject("Scripting.Filesystemobject")
+	
+	If objFso.FileExists(strSourceFile)Then
+		objFso.CopyFile strSourceFile , strDestinationFile , True
+	End If
+	
+	If Not objFso.FileExists(strDestinationFile) Then
+		func_Utility_Copy_Folder = True
+	End If
+	
+	Set objFso = Nothing
+            
+End Function 
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Read_TextFile(strFileName , )
+'# Purpose                        : To Copy File from one location to another location
+'# Input Parameters               :	strFileName , strWord
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+Public Function func_Utility_Read_TextFile(strFileName , strWord)
+
+	func_Utility_Read_TextFile = False
+	
+	
+	
+	Dim objFso , objFileToRead , strLine
+	
+	Set objFso = createobject("Scripting.Filesystemobject")
+	
+	Set objFileToRead = objFso.OpenTextFile(strFileName, ForReading, False)
+	
+	Do While Not objFileToRead.AtEndOfStream
+     	strLine = objFileToRead.ReadLine()
+		If Instr(LBound(strLine) , LBound(strWord)) > 0 Then
+			func_Utility_Read_TextFile = True
+			Exit Do
+		End If
+	Loop
+	objFileToRead.Close
+	Set objFso = Nothing
+    Set objFileToRead = Nothing        
+End Function 
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Write_TextFile(strFileName)
+'# Purpose                        : To Copy File from one location to another location
+'# Input Parameters               :	strFileName
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+Public Function func_Utility_Write_TextFile(strFileName , strContent)
+
+	func_Utility_Write_TextFile = False
+	
+	Dim objFso , objFileToWrite , objFileToRead , strLine
+	
+	Set objFso = createobject("Scripting.Filesystemobject")
+	
+	objFso.CreateTextFile(strFileName)
+	
+	Set objFileToWrite = objFso.OpenTextFile(strFileName, ForWriting, True)
+	objFileToWrite.WriteLine strContent	
+	objFileToWrite.Close
+	
+	Set objFileToRead = objFso.OpenTextFile(strFileName, ForReading, True)
+	strLine = objFileToWrite.ReadAll
+	
+	If strLine <> Empty Then
+		func_Utility_Write_TextFile = True
+	End If
+	
+	objFileToRead.Close
+	Set objFso = Nothing
+    Set objFileToRead = Nothing  
+	Set objFileToWrite = Nothing     
+End Function 
+
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Write_TextFile(strFileName)
+'# Purpose                        : To create excel
+'# Input Parameters               :	strFileName , strFilePath
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+Function func_Utility_CreatExcel(strFilePath , strFileName )
+	
+	
+	
+	Dim objExcel , objWorkbook	
+
+   	Set objExcel = CreateObject("Excel.Application")
+        
+	Set objWorkbook = objExcel.Workbooks.Add
+
+        objWorkbook.SaveAs strFilePath & "\" & strFileName
+
+	objWorkbook.Close 
+          
+	objExcel.Application.Quit
+
+	Set objExcel = Nothing
+
+End Function
+
+
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Delete_Excel_Column(strFileName,strColNum)
+'# Purpose                        : To Delete excel row
+'# Input Parameters               :	strFileName,strColNum
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+
+Public Function func_Utility_Delete_Excel_Column(strFileName,strColNum)
+
+	
+	
+	Dim objExcel , objWorkbook , objRange	
+	
+	Set objExcel = CreateObject("Excel.Application")
+
+	Set objWorkbook = objExcel.Workbooks.Open(strFileName)
+
+	set objRange = objWorkbook.Worksheets(1).UsedRange
+
+	objRange.Columns(strColNum).Delete
+
+	objExcel.ActiveWorkbook.Save
+
+	objExcel.Application.Quit
+
+	Set objExcel = Nothing
+    
+
+End Function
+
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Delete_Excel_Row(strFileName,strRowNum)
+'# Purpose                        : To Delete excel row
+'# Input Parameters               :	strFileName,strRowNum
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+
+
+Public Function func_Utility_Delete_Excel_Row(strFileName,strRowNum)
+
+	
+	
+	
+	Dim objExcel , objWorkbook , objRange	
+	
+	Set objExcel = CreateObject("Excel.Application")
+
+	Set objWorkbook = objExcel.Workbooks.Open(strFileName)
+
+	set objRange = objWorkbook.Worksheets(1).UsedRange
+
+	objRange.Rows(strRowNum).Delete
+
+	objExcel.ActiveWorkbook.Save
+
+	objExcel.Application.Quit
+
+	Set objExcel = Nothing
+    
+
+End Function
+
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Get_Cell_Value(strFileName,strSheetName,intRowNum,intColNum)
+'# Purpose                        : To Delete excel row
+'# Input Parameters               :	strFileName,strSheetName,intRowNum,intColNum
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+
+Public Function  func_Utility_Get_Cell_Value(strFileName,strSheetName,intRowNum,intColNum)
+
+	
+	
+	Dim objExcel , objWorkbook , objWorkSheet ,intRow ,intCol 
+	
+	Set objExcel = CreateObject("Excel.Application")
+
+	Set objWorkbook = objExcel.Workbooks.Open(strFileName)
+
+	Set objWorkSheet = objWorkbook.WorkSheets(strSheetName)
+	
+	intRow = cint(intRowNum)
+
+	intCol = cint(intColNum)
+
+        func_Utility_Get_Cell_Value= objWorkSheet.Cells(intRow ,intCo)
+
+	objWorkbook.Close
+	
+	objExcel.Application.Quit
+	
+	Set objWorkbook = Nothing
+	
+	Set objExcel = Nothing
+
+
+End Function
+
+
+'#***************************************************************************************************************************************
+'# Function/Sub Name              : func_Utility_Delete_Excel_Sheet(strFileName , strSheetName)
+'# Purpose                        : To Delete excel row
+'# Input Parameters               :	strFileName , strSheetName
+'# Output Parameters              : Boolean Value(True/False)
+'# Author                         : Preeti Singh
+'# Date Created[dd-mon-yy]    	  : 10-Jan-17
+'# Modified By                    :
+'# Date Modified[dd-mon-yy]  	  :
+'#***************************************************************************************************************************************
+
+Function func_Utility_Delete_Excel_Sheet(strFileName , strSheetName)
+
+	
+	
+	Dim objExcel , objWorkbook , objWorkSheet ,WorkSheetName ,strWorkSheetName 
+	
+	Set objExcel = CreateObject("Excel.Application")
+
+	Set objWorkbook = objExcel.Workbooks.Open(strFileName)
+
+	Set objWorkSheet = objWorkbook.WorkSheets(strSheetName)
+
+	objExcel.displayalerts = False
+
+	For each WorkSheetName in objWorkbook.worksheets
+
+		strWorkSheetName =  WorkSheetName.name
+
+		If Instr(LCase(strWorkSheetName),LCase(strSheetName)) > 0 Then
+
+			WorkSheetName.Delete
+		End If
+	Next 
+
+	objExcel.displayalerts = true
+
+	objWorkbook.Save
+
+	objWorkbook.Close
+
+	objExcel.Application.Quit
+
+	Set objExcel = Nothing
+
+End Function
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_utility_createandgetFileObj
+'# Purpose                  : to create a file for appending and return file object to write
+'# Input Parameters         : file name
+'# Output Parameters        : file object
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 16-Feb-2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+
+Public Function func_utility_createandgetFileObj(l_str_filename)
+
+Const Forreading = 1, ForWriting = 2, ForAppending = 8
+
+   Set fso = CreateObject("Scripting.FileSystemObject")
+	   If fso.FileExists (l_str_filename) Then
+		  Set f = fso.GetFile(l_str_filename)
+		  Set func_utility_createandgetFileObj = f.OpenAsTextStream(ForAppending, TristateTrue)
+	   Else
+		  fso.CreateTextFile(l_str_filename)
+		  Set f = fso.GetFile(l_str_filename)
+		  Set func_utility_createandgetFileObj = f.OpenAsTextStream(ForAppending, TristateTrue)
+	   End if 
+
+End Function
+
+
