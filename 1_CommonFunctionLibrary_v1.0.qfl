@@ -1,0 +1,146 @@
+'# ********************************************************************************************
+'# Function/Sub Name        : func_common_launchAquaInd
+'# Purpose                  : Launch Aqua Individual
+'# Input Parameters         : none
+'# Output Parameters        : boolean
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 20 Feb 2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+Public Function func_common_launchAquaInd()
+	Dim l_str_environment
+	Dim l_obj_loginscreen
+	Dim blnflag
+	
+	blnflag = False
+	
+	l_str_environment = Environment("Application_Environment")
+	
+	SystemUtil.Run  "\\DEVELOPMENT\content\Scripts\AD_AQUA\AD_AQUA.cmd", l_str_environment&" IND Quotes"
+	
+	set l_obj_loginscreen = PbWindow("wPbframe").PbWindow("wFrmlogon")
+	
+	If func_generic_ObjectSync(l_obj_loginscreen) Then
+		blnflag = True
+	End If
+	
+	func_common_launchAquaInd = blnflag
+	Set l_obj_loginscreen = Nothing
+End Function
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_common_login
+'# Purpose                  : Login to aqua individual
+'# Input Parameters         : none
+'# Output Parameters        : boolean
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 20 Feb 2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+Public Function func_common_login()
+	Dim blnFlag
+	blnFlag = False
+	
+	If PbWindow("wPbframe").PbWindow("wFrmlogon").PbEdit("wEditUserId").Exist(Environment("ShortSyncWait")) Then
+		PbWindow("wPbframe").PbWindow("wFrmlogon").PbEdit("wEditUserId").Set Environment("Username")
+		PbWindow("wPbframe").PbWindow("wFrmlogon").PbEdit("wEditPassword").Set Environment("Password")
+		PbWindow("wPbframe").PbWindow("wFrmlogon").PbButton("wBtnOk").Click
+		If func_generic_ObjectSync(PbWindow("wPbframe").PbObject("wQuickMenuTab")) Then
+		wait(Environment("LongSyncWait"))
+		wait(Environment("LongSyncWait"))
+			blnflag = True
+		End If
+	End If
+func_common_login = blnflag
+End Function
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_common_selectMenu
+'# Purpose                  : Select menu item
+'# Input Parameters         : Menu name
+'# Output Parameters        : boolean
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 21 Feb 2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+Public Function func_common_selectMenu(l_str_menuItem)
+	Dim blnFlag	
+	blnFlag = False
+	
+	Select Case LCase(Trim(l_str_menuItem))
+		Case "newcase"
+			PbWindow("wPbframe").WinMenu("wMenu").Select "Case;New...	Ctrl+N"
+			If func_generic_ObjectSync(PbWindow("wPbframe").PbWindow("wFrmNewCase")) Then				
+				blnflag = True
+			End If	
+		
+	End Select
+	
+	func_common_selectMenu = blnflag
+End Function
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_common_closeallopenwindowsPB
+'# Purpose                  : Close all open PB windows in application
+'# Input Parameters         : None
+'# Output Parameters        : boolean
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 21 Feb 2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+Public Function func_common_closeallopenwindowsPB()
+Dim blnFlag	
+Dim l_obj_des
+Dim l_obj_childs
+Dim l_int_iterator
+
+blnFlag = False
+
+Set l_obj_des = Description.Create
+l_obj_des("micClass").value = "PbWindow"
+
+set l_obj_childs = PbWindow("wPbframe").ChildObjects(l_obj_des)
+
+ 
+ For l_int_iterator = (l_obj_childs.count-2) To 0  Step -1 
+ 	l_obj_childs(l_int_iterator).close
+ 	blnFlag = True
+ Next
+func_common_closeallopenwindowsPB = blnFlag
+End Function
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_common_exitapplication
+'# Purpose                  : Close  application
+'# Input Parameters         : None
+'# Output Parameters        : boolean
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 21 Feb 2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+Public function func_common_exitapplication()
+Dim blnFlag
+Dim l_obj_Shell,l_str_Status
+blnFlag = False
+	On Error Resume Next
+	Set l_obj_Shell = CreateObject("WScript.Shell")
+	l_str_Status = l_obj_Shell.Run ("TASKKILL /F /IM "& "quotes.exe")
+	
+	If l_str_Status = 0 Then
+		blnFlag = True	
+	End If
+
+	If Err.Number<> 0 Then
+		blnFlag = False
+	End If
+	Set l_obj_Shell = Nothing
+	On error goto 0
+	sub_common_exitapplication = blnFlag
+	
+	DataTable.Export(Environment("g_env_BaseFolder") & "\TEST_DATA\TestData.xlsx") 
+End function
