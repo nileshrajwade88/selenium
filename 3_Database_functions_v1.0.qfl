@@ -1,0 +1,122 @@
+'# ********************************************************************************************
+'  Define global variable for database function library
+'# ********************************************************************************************
+Dim g_obj_con
+
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_database_connect
+'# Purpose                  : to connect database
+'# Input Parameters         : Database Instance,Databse User Name, Password
+'# Output Parameters        : Boolean True if success else false
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+
+Public Function func_database_connect(g_str_dbinstance,g_str_dbuser,g_str_dbpwd)
+	Dim l_bln_flag
+	Dim l_obj_con
+	l_bln_flag = False
+	
+	On error resume next
+	
+	Set l_obj_con = CreateObject("ADODB.connection")
+	l_obj_con.Open "Provider=MSDAORA;Data Source="&g_str_dbinstance&";User ID="&g_str_dbuser&"; Password="&g_str_dbpwd&";"
+	
+	If err.number = 0 Then
+		Set g_obj_con = l_obj_con
+		l_bln_flag = True
+	End If
+	
+	Set l_obj_con = Nothing
+	
+	func_database_connect = l_bln_flag
+End Function
+
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_database_getsinglevalue
+'# Purpose                  : to retrieve database value with query returning single value 
+'# Input Parameters         : sql string query
+'# Output Parameters        : string value
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+
+Public Function func_database_getsinglevalue(l_str_queryonerecord)
+	Dim l_bln_flag
+	Dim l_obj_recordset
+	Dim l_str_value
+	l_bln_flag = False
+	
+	On error resume next
+	
+	Set l_obj_recordset = CreateObject("ADODB.Recordset")
+	l_obj_recordset.Open l_str_queryonerecord,g_obj_con
+	
+	Do until l_obj_recordset.EOF
+		l_str_value = Trim(l_obj_recordset.Fields(0).Value)
+		l_obj_recordset.MoveNext
+	Loop 
+	
+	If err.number = 0 Then
+		func_database_getsinglevalue = l_str_value
+	Else
+		func_database_getsinglevalue = l_bln_flag		
+	End If
+	
+	On error goto 0
+	Set l_obj_recordset = Nothing
+	Set g_obj_con = Nothing
+End Function
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_database_getmulticolvalues
+'# Purpose                  : to retrieve database values with query returning multiple column values
+'# Input Parameters         : sql string query
+'# Output Parameters        : comma separated string values  (max 10)
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+
+Public Function func_database_getmulticolvalues(l_str_querymulticolrecord)
+	Dim l_bln_flag
+	Dim l_obj_recordset
+	Dim l_str_value(10)
+	Dim l_str_cols ' array
+	Dim l_int_iterator
+	l_bln_flag = False
+	
+	On error resume next
+	
+	Set l_obj_recordset = CreateObject("ADODB.Recordset")
+	l_obj_recordset.Open l_str_querymulticolrecord,g_obj_con
+	
+	l_str_cols = split((split(lcase(split(lcase(l_str_querymulticolrecord),lcase("select"))(1)),lcase("from"))(0)),",")		
+	
+	Do until l_obj_recordset.EOF
+		For l_int_iterator = 0 to UBound(l_str_cols)
+			l_str_value(l_int_iterator) = Trim(l_obj_recordset.Fields(l_int_iterator).Value) 
+		Next
+		l_obj_recordset.MoveNext
+	Loop 
+		
+	If err.number = 0 Then
+		func_database_getmulticolvalues = l_str_value
+	Else
+		func_database_getmulticolvalues = l_bln_flag		
+		msgbox err.description
+	End If
+	
+	On error goto 0
+	Set l_obj_recordset = Nothing
+	Set g_obj_con = Nothing
+End Function
+
+
