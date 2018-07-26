@@ -1,0 +1,178 @@
+'# ************************************************************************************************************************************************************
+'# Name                     : Driver Script
+'# Purpose                  : Driver script to execute test suit based on test data sheet
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 20 Feb 2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ************************************************************************************************************************************************************
+
+Dim blnFlag 
+
+Set wshShell = CreateObject( "WScript.Shell" )	
+g_str_basefolder = split(Environment("TestDir"),UCase("\TEST_DRIVER"))(0)
+Environment("g_env_BaseFolder") = g_str_basefolder
+
+'load all resources
+Call func_driver_loadResources()
+
+l_int_TestCaseCount=Datatable.GetSheet("Main").GetRowCount
+
+
+'Start HTML Reporting
+Call func_html_startSummaryReport()
+
+		
+'# *********************************************************************************************************************************************************
+'# Step : Launch Application
+'# *********************************************************************************************************************************************************
+	If func_common_launchAquaInd() = True Then
+		blnFlag = True
+	Else
+		blnFlag = False
+	End If
+
+'# *********************************************************************************************************************************************************
+'# Step : Login to Aqua
+'# *********************************************************************************************************************************************************
+	If blnFlag = True Then
+	blnFlag = False
+		If func_common_login() = True Then
+			blnFlag = True
+		Else
+			blnFlag = False
+		End If
+	End If
+
+'# *********************************************************************************************************************************************************
+	For l_int_iterator = 1 To l_int_TestCaseCount
+	Datatable.GetSheet("Main").SetCurrentRow l_int_iterator
+		Environment("g_env_CurrTestCaseName") = Datatable.Value("TestCase_ID","Main")	
+		Environment("g_env_CurrTestCaseDesc") = Datatable.Value("Test_Description","Main")	
+		l_str_module = Datatable.Value("Module","Main")
+		
+		
+		l_str_packtype = Environment("PackType") & "_Pack"
+	    	  
+	   	If (LCase(DataTable.GetSheet("Main").GetParameter(l_str_packtype).ValueByRow(l_int_iterator)) = LCase("Yes")) OR (LCase(DataTable.GetSheet("Main").GetParameter(l_str_packtype).ValueByRow(l_int_iterator)) = LCase("Y")) Then
+		'Start HTML Reporting for Test Case		
+		Call func_html_StartTC()
+			
+			
+		g_str_micstatus = micPass
+
+			
+		'# *********************************************************************************************************************************************************
+		'  Test Case
+		'# *********************************************************************************************************************************************************
+			Eval("func_Test_" & l_str_module)
+		'# *********************************************************************************************************************************************************		
+		
+		'# *********************************************************************************************************************************************************
+	
+		
+		Call func_html_EndTC()
+		End If
+	Next
+
+
+'# *********************************************************************************************************************************************************
+
+	'close application 
+		func_common_exitapplication
+'Conclude summary report
+Call func_html_closeSummaryReport()
+
+'# **************************************************************************************************************************************************************
+'# End of driver script
+'# **************************************************************************************************************************************************************
+
+
+'Custom functions to support driver
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_driver_loadResources
+'# Purpose                  : load all required resources to run test suit
+'# Input Parameters         : none
+'# Output Parameters        : boolean
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 20 Feb 2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+
+Public Function func_driver_loadResources()
+	'Config xml	
+	Environment.LoadFromFile(Environment("g_env_BaseFolder") & "\TEST_SETTINGS\Configuration.xml")
+	
+	'Funcion Libraries
+	On Error Resume Next
+	Set l_obj_fso = CreateObject("Scripting.FileSystemObject")
+	l_str_LibFolder = Environment("g_env_BaseFolder") + "\LIBRARIES"
+		Set l_str_FunctionLibFolder = l_obj_fso.GetFolder(l_str_LibFolder)
+		
+	
+		For Each l_str_Folder in l_str_FunctionLibFolder.SubFolders
+	
+		Set l_str_libFiles = l_str_Folder.Files
+			For Each l_str_libfile in l_str_libFiles
+				IF (strComp(right(l_str_libfile,3),"vbs") = 0 ) OR (strComp(right(l_str_libfile,3),"qfl") = 0) Then
+					LoadFunctionLibrary l_str_Folder+"\"+l_str_libfile.Name
+				End If
+			Next
+		Next
+	On Error Goto 0
+
+	
+	'Test Data
+	func_driver_ImportdataFromExcel(Environment("g_env_BaseFolder") & "\TEST_DATA\TestData.xlsx")
+	
+	'Object Repository
+	l_str_ORFolder = Environment("g_env_BaseFolder") + "\OBJECT_REPOSITORY"
+	Set l_obj_ORFolder = l_obj_fso.GetFolder(l_str_ORFolder)
+	Set l_str_ORFiles = l_obj_ORFolder.Files
+		For Each l_str_tsrfile in l_str_ORFiles
+				IF (strComp(right(l_str_tsrfile,3),"tsr") = 0 ) Then
+					RepositoriesCollection.Add l_str_ORFolder+"\"+l_str_tsrfile.Name					
+				End If
+		Next
+		
+	'register function to override methods	
+	Call sub_utility_registeruserfunc()
+	
+	Set l_obj_fso = Nothing
+	
+func_driver_loadResources = True
+
+End Function
+
+
+'# ********************************************************************************************
+'# Function/Sub Name        : func_driver_ImportdataFromExcel
+'# Purpose                  : import all sheets in test data sheet
+'# Input Parameters         : sheet file name
+'# Output Parameters        : 
+'# Author			        : Kiran Londhe
+'# Date Created[dd-mon-yy]  : 20 Feb 2017
+'# Modified By				:
+'# Date Modified[dd-mon-yy] :
+'# ********************************************************************************************
+
+ Public Function func_driver_ImportdataFromExcel(l_str_filepath)
+     func_driver_ImportdataFromExcel = False
+     Set objExcel = createobject("Excel.Application")
+     Set objWorkbook = objExcel.Workbooks.Open(l_str_filepath)
+     intSheetCount = objWorkbook.Worksheets.Count
+     For Each objSheet in objWorkbook.Worksheets
+         DataTable.AddSheet objSheet.Name
+     Next
+     objWorkbook.Close
+     objExcel.Quit    
+     Set objExcel = nothing
+     Set objWorkbook = nothing
+     DataTable.DeleteSheet dtGlobalSheet   
+     DataTable.Import l_str_filepath
+     If DataTable.GetSheetCount = intSheetCount Then
+         func_driver_ImportdataFromExcel = True
+     End If
+End Function
