@@ -1,3 +1,4 @@
+PruWealth_AssetSelectionPage.ja
 package com.pru.pageobjects;
 
 import org.openqa.selenium.WebElement;
