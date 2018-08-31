@@ -1,0 +1,88 @@
+/**
+ * @author      Sudhindra Immidi
+ *  
+ */
+package com.pru.utilities;
+
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedHashMap;
+
+public class ConcurrentUpdates  extends ExtentReport  implements Runnable{
+
+	String Sheetnameandrow;String tempdata;String Updatelog;
+	LinkedHashMap<String, String>  ObjProperties; 
+	LinkedHashMap<Integer ,LinkedHashMap<String, String>>  IllustrationOutputs; 
+
+	public ConcurrentUpdates(String Sheetnameandrow, String tempdata,String Updatelog) {
+		this.Sheetnameandrow=Sheetnameandrow;
+		this.tempdata = tempdata;
+		this.Updatelog = Updatelog;
+	}
+
+	public ConcurrentUpdates(LinkedHashMap<String, String>  ObjProperties) {
+		this.ObjProperties=ObjProperties;
+		this.Updatelog = "ObjectUpdates";
+	}
+
+	public ConcurrentUpdates(LinkedHashMap<Integer ,LinkedHashMap<String, String>>  IllustrationOutputs,String TypeofData) {
+		this.IllustrationOutputs=IllustrationOutputs;
+		this.Updatelog =TypeofData;
+	}
+	
+	@Override
+	public synchronized void run() {
+		try{
+			if(Updatelog.equalsIgnoreCase("CurrentExecutionLog")){  //Updating Current Execution Logger
+				currentExecutionLog();
+			}else if(Updatelog.equalsIgnoreCase("node")){ 	//Creating Nodes in parallel before initiating test execution scripts.  
+				try {
+					Grid_Builder.startNode(Sheetnameandrow,tempdata,false);
+				} catch (Exception e) {
+					reportFail(e.getMessage());
+				}
+			}else if(Updatelog.equalsIgnoreCase("ObjectUpdates")){
+				TestDataProvider.setObjectProperties(ObjProperties);	 // SheetNameandRow,Column Name, Data
+			}
+		}catch (Exception e) {
+			reportFail(e);
+		}
+	}	
+
+	public synchronized void currentExecutionLog(){
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter(new FileOutputStream(ConfigProperties.CurrentexecutionlogPath, true));
+			DateFormat dateFormat = new SimpleDateFormat("dd-MMM - HH:mm:ss");
+			Date date = new Date();
+			String dateformat = dateFormat.format(date).toString();
+			writer.write("<I>" + dateformat +  "</I> : " + tempdata + "<br>");
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public synchronized static void initializeExecutionLog(){
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter(new FileOutputStream(ConfigProperties.CurrentexecutionlogPath, false));
+			DateFormat dateFormat = new SimpleDateFormat("dd-MMM -  HH:mm:ss");
+			Date date = new Date();
+			String dateformat = dateFormat.format(date).toString();
+			writer.write("<I>" + dateformat + " </I>: Initiating <B> " + ConfigProperties.testName +"   Test Execution </B> .... <br>");
+			writer.close();
+			File htmlFile = new File(ConfigProperties.CurrentexecutionHtml);
+			if(!htmlFile.exists()) htmlFile.createNewFile();
+			Desktop.getDesktop().browse(htmlFile.toURI());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+}
