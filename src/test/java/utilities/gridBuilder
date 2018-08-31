@@ -1,0 +1,573 @@
+/**
+ * @author      Sudhindra Immidi
+ */
+package com.pru.utilities;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.FileUtils;
+import org.openqa.grid.common.GridRole;
+import org.openqa.grid.common.RegistrationRequest;
+import org.openqa.grid.common.SeleniumProtocol;
+import org.openqa.grid.internal.utils.GridHubConfiguration;
+import org.openqa.grid.internal.utils.SelfRegisteringRemote;
+import org.openqa.grid.web.Hub;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
+
+public class Grid_Builder extends ConfigProperties {
+
+	ConfigProperties cp = new ConfigProperties();
+    public static File file = new File("grid\\hub.bat");
+    public static File chromedriver = new File("grid\\chromedriver.exe");
+    public static File iedriver = new File("grid\\IEDriverServer.exe");
+    public static File Edgedriver = new File("grid\\MicrosoftWebDriver.exe");
+    public static File hubjar = new File(Seleniumgridjar); 
+    public static ExecutorService executornodeinvoke= Executors.newFixedThreadPool(20);
+    
+    //Usage: Create Hub Locally or Remotely through Standard Command Prompts 
+	public static  boolean startHub(String Hub) throws IOException, InterruptedException{
+		boolean createhub = true;
+		try{
+		String hub="";
+		
+		int hubPort=4444;
+		if(Hub.split(":").length==0){
+			hub = Hub;
+		}else{
+			hub =Hub.split(":")[0];
+			hubPort = Integer.parseInt(Hub.split(":")[1]);
+		}
+	
+		String huburl="http://"+hub+":"+hubPort+"/grid";
+		try {
+		      HttpURLConnection.setFollowRedirects(false);
+		      HttpURLConnection con = (HttpURLConnection) new URL(huburl).openConnection();
+		      con.setRequestMethod("HEAD");
+		     if(con.getResponseCode() == HttpURLConnection.HTTP_OK) {
+		    		currentexecutionlog("Hub already available at :http://"+ hub + ":"+ hubPort+"/grid/console");
+		      }
+	    }
+	    catch (Exception e) {
+	    	currentexecutionlog("Creating Hub at :http://"+ hub + ":"+ hubPort+"/grid/console");
+	    	createhub = false;
+	    }
+		
+		if(createhub==false){
+			 String currentcomputername=InetAddress.getLocalHost().getHostName();
+			 if(file.exists())  file.delete(); 
+			  file.createNewFile();
+			  PrintWriter writer = new PrintWriter(file, "UTF-8");
+			  writer.println("title hub");  
+			  if(hubPort!=0){
+				  writer.println("cd C:\\grid & java -jar -Dselenium.LOGGER=C:\\grid\\log.txt "+ hubjar.getName() + " -role hub -port "+ hubPort + " -browserTimeout 60 -timeout 300 -nodePolling "+ nodePolling);  
+			  }else{
+				  writer.println("cd C:\\grid & java -jar  -Dselenium.LOGGER=C:\\grid\\log.txt "+ hubjar.getName() + " -role hub " + " -browserTimeout 60"); 
+			  }
+			  writer.close();
+			  
+			  if(hub.isEmpty()){
+				  hub = "localhost";
+				  Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd grid && hub.bat\""); // Creating Hub on remote Machine  
+				  Thread.sleep(3000);
+			  }else{
+				  File source = new File(file.getAbsolutePath());
+				  File dest = new File("\\\\"+hub+"\\C$\\grid\\"+file.getName());
+				  FileUtils.copyFile(source, dest);// creating Hub.bat
+				  
+				  dest = new File("\\\\"+hub+"\\C$\\grid\\" + hubjar.getName());
+				  if(!dest.exists()){
+					  FileUtils.copyFile(hubjar, dest); // updating latest GridJar
+				  }
+				 
+				  if(hub.equalsIgnoreCase(currentcomputername)){
+					 Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd grid && hub.bat\""); // Creating Hub on remote Machine  
+				  }else{
+					  Runtime.getRuntime().exec("schtasks.exe /Run /S "+ hub + " /TN hub"); // Creating Hub on remote Machine
+				  }
+				  
+				  Thread.sleep(2000);
+				  dest = new File("\\\\"+hub+"\\C$\\grid\\"+file.getName());
+			  }
+			   
+			try {
+				 Thread.sleep(1000);
+			      HttpURLConnection.setFollowRedirects(false);
+			      HttpURLConnection con = (HttpURLConnection) new URL(huburl).openConnection();
+			      con.setRequestMethod("HEAD");
+			     if(con.getResponseCode() == HttpURLConnection.HTTP_OK) {
+			    	   String urllink = "<a href='http://" + hub + ":"+ hubPort+ "/grid/console' target='_blank'>URL</a>";
+			    		currentexecutionlog("Hub created successfully on <B>" + hub  +"</B>. Access "+ urllink + " for further details.");
+			    		createhub = true;
+			      }
+		    }
+		    catch (Exception e) {
+		    	currentexecutionlog("<B>Failed in creating  Hub: http://"+ hub + ":"+ hubPort+"/grid/console</B>");
+		    	createhub = false;
+		    }
+		}
+		}catch(Exception e){
+			currentexecutionlog(e.toString());
+		}
+		return createhub;
+	}
+	
+
+	//Usage: Create Node Locally or Remotely through Standard Command Prompts 
+	public static boolean startNode(String Hub, String nodemachine,Boolean forcecreate) throws Exception{
+		Boolean blncreatenode=false;
+		try{
+			int nodePort=5556;
+			String browsers="";
+			LinkedHashMap<String, String> nodedata = new LinkedHashMap<String, String>();
+			nodedata =TestDataProvider.getNodeData(nodemachine); 
+			for( Entry<String, String> entry : nodedata.entrySet()){
+		    	String availbrow = entry.getKey().toString();
+		    	if(browsers.isEmpty()){
+		    		browsers=availbrow;
+		    	}else{
+		    		browsers=browsers+":"+availbrow;
+		    	}
+			}
+			if(browsers.isEmpty()){
+				browsers="chrome:firefox:IE:Edge";
+			}
+			
+			String hub="";
+			int hubPort=4444;
+			if(Hub.split(":").length==0){
+				hub = Hub;
+			}else{
+				hub =Hub.split(":")[0];
+				hubPort = Integer.parseInt(Hub.split(":")[1]);
+			}
+			
+			 String currentcomputername=InetAddress.getLocalHost().getHostName();
+			
+			  String nodeurl ="http://"+nodemachine + ":" +nodePort ;
+			  HttpURLConnection.setFollowRedirects(false);
+		      HttpURLConnection con = (HttpURLConnection) new URL(nodeurl).openConnection();
+		      con.setRequestMethod("HEAD");
+		      con.setConnectTimeout(3000);
+		      
+		      try{
+		    	 con.getResponseCode(); // Validation of node availability to connect 
+		    	 if(forcecreate==true) blncreatenode=true;
+		      }catch (Exception e){
+		    	 blncreatenode= true; //Throws error if that node is not available 
+		      }
+		      
+		      if(blncreatenode==true){
+		    	 currentexecutionlog("Creating Node on machine : "+nodemachine);
+				 String nodecmd="",cmdchrome="",cmdff="",cmdie="",cmdsafari="",cmedge="";
+				 String initialcmd= "java  -jar " + hubjar.getName();
+				 if(nodePort==0){
+					 nodePort =4444;
+				 }
+				 String hubpath= " -hub http://"+hub+":"+hubPort+"/grid/register -role node -port "+ nodePort;
+				 String[] arrbrowsers = browsers.split(":");
+			    
+				 for (int i = 0; i < arrbrowsers.length; i++) {
+					 if(arrbrowsers[i].equalsIgnoreCase("chrome")){
+						 if(cmdchrome.isEmpty()){
+							  File source = new File(chromedriver.getAbsolutePath());
+							  File dest;
+							  int version=Integer.parseInt(nodedata.get("chrome").substring(0, 2));
+							  if(version>=39 && version<=42){
+								  chromedriver = new File("grid\\Chrome_39\\chromedriver.exe");
+								  source = new File(chromedriver.getAbsolutePath());
+							  }else if(version>43 && version<=48){
+								  chromedriver = new File("grid\\Chrome_Above43\\chromedriver.exe");
+								  source = new File(chromedriver.getAbsolutePath());
+							  }else if(version<=36){
+								  chromedriver = new File("grid\\Chrome_Below36\\chromedriver.exe");
+								  source = new File(chromedriver.getAbsolutePath());
+							  }else if(version>=37){
+								  chromedriver = new File("grid\\Chrome_Above36\\chromedriver.exe");
+								  source = new File(chromedriver.getAbsolutePath());
+							  }
+							  
+							  dest = new File("\\\\"+nodemachine+"\\C$\\grid\\"+source.getName());
+	
+							  if(dest.exists()) dest.delete();
+							  
+							  FileUtils.copyFile(source, dest);// Copying Chrome driver  to the node machine
+							  					  
+							  if(nodedata.containsKey("chrome")){
+								  cmdchrome = "  -Dwebdriver.chrome.driver=C:\\grid\\chromedriver.exe -role webdriver -browser browserName=chrome,maxInstances=3,version="+nodedata.get("chrome")+" ";  
+							  }else{
+								  cmdchrome = "  -Dwebdriver.chrome.driver=C:\\grid\\chromedriver.exe -role webdriver -browser browserName=chrome,maxInstances=3 ";
+							  }
+							  	 
+						 }
+					 }else if(arrbrowsers[i].equalsIgnoreCase("firefox")){
+						 if(cmdff.isEmpty()){
+							 if(nodedata.containsKey("firefox")){
+								 cmdff = " -browser browserName=firefox,maxInstances=3,version="+ nodedata.get("firefox")+" ";
+							 }else{
+								 cmdff = " -browser browserName=firefox,maxInstances=3 ";
+							 }
+						 }
+					 }else if(arrbrowsers[i].equalsIgnoreCase("IE")){
+						 if(cmdie.isEmpty()){
+							  File source = new File(iedriver.getAbsolutePath());
+							  File dest = new File("\\\\"+nodemachine+"\\C$\\grid\\"+source.getName());
+							  
+							  if(dest.exists()) dest.delete();
+							  
+								  FileUtils.copyFile(source, dest);// Copying IE driver file to the node machine
+							  if(nodedata.containsKey("ie")){
+								  cmdie = " -role  webdriver  -Dwebdriver.ie.driver=C:\\grid\\IEDriverServer.exe -browser browserName=\"internet explorer\",maxInstances=3,version="+nodedata.get("ie")+" ";  
+							  }else{
+								  cmdie = " -role  webdriver  -Dwebdriver.ie.driver=C:\\grid\\IEDriverServer.exe -browser browserName=\"internetexplorer\",maxInstances=3 ";
+							  }
+						 }
+					 }else if(arrbrowsers[i].equalsIgnoreCase("Edge")){
+						 if(nodedata.containsKey("ie")){
+							  cmedge = "  -Dwebdriver.edge.driver=\"C:\\Program Files\\Microsoft Web Driver\\MicrosoftWebDriver.exe\" -browser browserName=MicrosoftEdge,maxInstances=3,version="+nodedata.get("edge")+" ";  
+						  }else{
+							  cmedge = "  -Dwebdriver.edge.driver=\"C:\\Program Files\\Microsoft Web Driver\\MicrosoftWebDriver.exe\" -browser browserName=MicrosoftEdge,maxInstances=3 ";
+						  }
+					 }
+				}
+				
+				 String applicationname="";
+				 
+				 nodecmd = "title node & cd C:\\grid & " +  initialcmd + cmdchrome + cmdff  +  cmedge + cmdie + cmdsafari + applicationname + hubpath + " -maxSession 1"  ;//+ " nodeip="+nodeip;
+				 DateFormat dateFormat = new SimpleDateFormat("MMddHHmmss");
+				  Calendar cal = Calendar.getInstance();
+				  
+				 File node = new File(dateFormat.format(cal.getTime())+".bat");
+				 node.createNewFile();
+				 PrintWriter writer = new PrintWriter(node, "UTF-8");
+				 writer.println(nodecmd); 
+				 writer.close();
+				 
+				 File dest ;
+				 if(nodemachine.equalsIgnoreCase(currentcomputername)){
+					  dest = new File("grid\\node.bat");
+				 }else{
+					  dest = new File("\\\\"+nodemachine+"\\C$\\grid\\node.bat"); 
+				 }
+				  
+				  FileUtils.copyFile(node, dest);// Copying Node to desired Remote location
+	 			  node.delete();
+	 			 dest = new File("\\\\"+nodemachine+"\\C$\\grid\\" + hubjar.getName());
+				  if(!dest.exists()){
+					  FileUtils.copyFile(hubjar, dest); // updating latest GridJar
+				  }
+				  
+				  currentexecutionlog("Attaching node :<B> "+ nodemachine + "</B> to hub: http://"+ hub + ":"+ hubPort+"/grid/console");
+				  if(nodemachine.equalsIgnoreCase(currentcomputername)){
+					 Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd grid && node.bat\""); // Creating Hub on remote Machine  
+				  }else{
+					  Runtime.getRuntime().exec("schtasks.exe /Run /S "+ nodemachine + " /TN node"); // Creating node on remote Machine
+				  }
+				  
+				  dest = new File("\\\\"+nodemachine+"\\C$\\grid\\node.bat"); 
+				  Thread.sleep(3500);		
+				  try{
+					  HttpURLConnection.setFollowRedirects(false);
+				      con = (HttpURLConnection) new URL(nodeurl).openConnection();
+				      con.setRequestMethod("HEAD");
+					  if(con.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+						  currentexecutionlog("Node created succesfully to hub: http://"+ hub + ":"+ hubPort+"/grid/console from machine :<B>"+nodemachine +"</B>");
+						  blncreatenode =true;
+					  }
+				   }catch (Exception e){
+					   try{
+						    Thread.sleep(3500);
+							  HttpURLConnection.setFollowRedirects(false);
+						      con = (HttpURLConnection) new URL(nodeurl).openConnection();
+						      con.setRequestMethod("HEAD");
+							  if(con.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+								  currentexecutionlog("Node created succesfully to hub: http://"+ hub + ":"+ hubPort+"/grid/console from machine :<B>"+nodemachine+"</B>");
+								  blncreatenode =true;
+							  }
+						   }catch (Exception e1){
+						    	  currentexecutionlog("<B>Node is not created on machine "+nodemachine +" </B>Error Message :"+e1.getMessage());
+						   }
+				   }
+		      }else{
+		    	  currentexecutionlog("<B>Node already created at : </B>"+nodeurl);
+		    	  blncreatenode=true;
+		      }
+		}catch(Exception e){
+			currentexecutionlog(e.getMessage());
+		}
+	      return blncreatenode;
+	}
+	
+	
+	//Wait for Node availability
+	public static void waitforNodeAvailability(String nodemachine){
+		 String nodeurl ="http://"+nodemachine + ":5556" ;
+		 try{
+			 Thread.sleep(5000);
+			  HttpURLConnection.setFollowRedirects(false);
+		      HttpURLConnection con = (HttpURLConnection) new URL(nodeurl).openConnection();
+		      con.setRequestMethod("HEAD");
+		      con.setConnectTimeout(3000);
+			  HttpURLConnection.setFollowRedirects(false);
+		      con = (HttpURLConnection) new URL(nodeurl).openConnection();
+		      con.setRequestMethod("HEAD");
+			  if(con.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+				  currentexecutionlog("Node restarted and attached to hub succesfully  from machine :<B>"+nodemachine +"</B>");
+			  }
+		   }catch (Exception e){
+			   try{
+				    Thread.sleep(3500);
+					  HttpURLConnection.setFollowRedirects(false);
+					  HttpURLConnection con = (HttpURLConnection) new URL(nodeurl).openConnection();
+				      con.setRequestMethod("HEAD");
+					  if(con.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+						  currentexecutionlog("Node restarted and attached to hub succesfully  from machine :<B>"+nodemachine +"</B>");
+					  }
+				   }catch (Exception e1){
+				   }
+		   }
+	}
+	
+	
+	//Usage: Create Hub  Programmatically .Cannot Create Hub on remote machines
+	public  static void localHub(int HubPort, String typeofOperation) throws Exception {
+		
+		   boolean blnhub = false;
+		   String huburl="http://localhost:"+HubPort+"/grid";
+			try {
+			      HttpURLConnection.setFollowRedirects(false);
+			      HttpURLConnection con = (HttpURLConnection) new URL(huburl).openConnection();
+			      con.setRequestMethod("HEAD");
+			     if(con.getResponseCode() == HttpURLConnection.HTTP_OK) {
+			    	 blnhub = true; // Hub is available
+			      }
+		    }
+		    catch (Exception e) {
+		    	currentexecutionlog("Creating Hub locally on Port :"+HubPort);
+		    }
+			
+			GridHubConfiguration config = new GridHubConfiguration();
+	        config.setHost("localhost");
+	        config.setPort(HubPort);
+	        config.setTimeout(80000);
+	        Hub hub = new Hub(config);
+	        
+			if(typeofOperation.equalsIgnoreCase("Start")){
+				if(blnhub==false){
+				    hub.start();
+				}else{
+					currentexecutionlog("Hub is alreading running in progress");
+				}
+			}else if(typeofOperation.equalsIgnoreCase("Stop")){
+				if(blnhub==true){
+					hub.stop();
+				}
+			}else if(typeofOperation.equalsIgnoreCase("Restart")){
+				if(blnhub==true){
+					currentexecutionlog("Active Sessions:"+hub.getRegistry().getActiveSessions().size());
+					hub.stop();
+					hub.start();
+				}
+			}	
+		}
+	   
+	//Usage: Create Node Programmatically .Cannot Create node on remote machines
+	public static void startNode(int hubPort,int nodeport,String browser) throws MalformedURLException, InterruptedException{
+			
+		    String hub = "localhost";
+	        
+			RegistrationRequest req = new RegistrationRequest();
+	        req.setRole(GridRole.NODE);
+	        
+	        if(browser.toLowerCase().contains("safari")){
+	        	DesiredCapabilities safari = DesiredCapabilities.safari();
+	 	        safari.setBrowserName("safari");
+	 	        safari.setCapability("maxInstances",3);
+	 	        safari.setCapability("seleniumProtocol", SeleniumProtocol.WebDriver);
+	 	        req.addDesiredCapability(safari);
+	        }
+
+	        if(browser.toLowerCase().contains("chrome")){
+	        	DesiredCapabilities chrome = DesiredCapabilities.chrome();
+		        chrome.setBrowserName("chrome");
+		        chrome.setCapability("maxInstances",3);
+		        chrome.setCapability("-Dwebdriver.chrome.driver","C:\\chromedriver.exe");
+		        chrome.setCapability("seleniumProtocol", SeleniumProtocol.WebDriver);
+		        req.addDesiredCapability(chrome);
+	        }
+	        
+	        if(browser.toLowerCase().contains("ie")){
+	        	 DesiredCapabilities ie = DesiredCapabilities.internetExplorer();
+	 	        ie.setBrowserName("internetexplorer");
+	 	        ie.setCapability("maxInstances",3);
+	 	        ie.setCapability("-Dwebdriver.ie.driver","C:\\IEDriverServer.exe");
+	 	        ie.setCapability( InternetExplorerDriver.INTRODUCE_FLAKINESS_BY_IGNORING_SECURITY_DOMAINS, true);
+	 	        ie.setCapability("seleniumProtocol", SeleniumProtocol.WebDriver);
+	 	        req.addDesiredCapability(ie);
+	        }
+	        
+	        if(browser.toLowerCase().contains("firefox")){
+	        	 DesiredCapabilities firefox = DesiredCapabilities.firefox();
+	 	        firefox.setBrowserName("firefox");
+	 	        firefox.setCapability("maxInstances",3);
+	 	        firefox.setCapability("seleniumProtocol", SeleniumProtocol.WebDriver);
+	 	        req.addDesiredCapability(firefox);
+	        }
+	        
+	        Map<String, Object> nodeConfiguration = new HashMap<String, Object>();
+	        
+	        URL remoteURL = new URL("http://" + hub + ":" + hubPort);
+	        nodeConfiguration.put(RegistrationRequest.AUTO_REGISTER, true);
+	        nodeConfiguration.put(RegistrationRequest.HUB_HOST, hub);
+	        nodeConfiguration.put(RegistrationRequest.HUB_PORT, hubPort);
+	        nodeConfiguration.put(RegistrationRequest.PORT, nodeport);
+	        nodeConfiguration.put(RegistrationRequest.PROXY_CLASS, "org.openqa.grid.selenium.proxy.DefaultRemoteProxy");
+	        nodeConfiguration.put(RegistrationRequest.MAX_SESSION, 2);
+	        nodeConfiguration.put(RegistrationRequest.CLEAN_UP_CYCLE, 10000);
+	        nodeConfiguration.put(RegistrationRequest.REMOTE_HOST, remoteURL);
+	        nodeConfiguration.put(RegistrationRequest.MAX_INSTANCES, 5);
+	        req.setConfiguration(nodeConfiguration);
+	        
+	        SelfRegisteringRemote remote = new SelfRegisteringRemote(req);
+	       
+	        boolean blnkillsession = false;
+	        try {
+				remote.startRemoteServer();
+				remote.startRegistrationProcess();
+			} catch (Exception e) {
+			}
+	        
+	        if(blnkillsession == true){
+	        	  remote.stopRemoteServer();
+	       }else{
+	        	  
+	        }
+		}
+	
+	//Usage: Clear Hub/Node on the specified machine ID passed to it. Inputs can be any valid remote machine
+	public static void clearHubandNodes(String machines) throws IOException, InterruptedException{
+		  Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd grid && KillHubNodes.vbs " + machines +  " && exit\""); // Creating Hub on remote Machine
+		  Thread.sleep(2000);
+	}
+	
+	//Usage: Clear Hub/Node selected according to the test cases selected for test execution. Local Hubs or nodes will be ignored automatically. Users need to clean Local Hubs and Nodes Manually.
+	public static void clearHubandNodes() throws Exception{
+		LinkedHashMap<String, String> FinalNodeslist = new LinkedHashMap<String, String>();
+    	LinkedHashMap<String, String> tempmachine = new LinkedHashMap<String, String>();
+    	LinkedHashMap<String, String> temphub = new LinkedHashMap<String, String>();
+    	FinalNodeslist = TestDataProvider.getHubandNodeData();
+    	String localMachine = java.net.InetAddress.getLocalHost().getHostName();  	
+    	for( Entry<String, String> entry : FinalNodeslist.entrySet()){
+	    	String osbrowserverision = entry.getKey().toString();
+	    	LinkedHashMap<String, String> griddata = new LinkedHashMap<String, String>();
+	    	griddata = TestDataProvider.getGridData(osbrowserverision);
+	    	String machineID = griddata.get("Machine_ID");
+	    	String hub = griddata.get("Hub").split(":")[0];
+	    	if(localMachine.equalsIgnoreCase(hub)){
+	    		temphub.put(hub, "");
+	    	}else 	if(!temphub.containsKey(hub)){
+	    		 Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd grid && KillHubNodes.vbs " + hub +  " && exit\""); // clearing  Hub on remote Machine
+	    		 Thread.sleep(1300);
+	    		 temphub.put(hub, "");
+	    	     tempmachine.put(hub, "");
+	    	}
+	    	
+	    	if(localMachine.equalsIgnoreCase(machineID)){
+	    		tempmachine.put(machineID, "");
+	    	}else 	if(!tempmachine.containsKey(machineID)){
+	    		 Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd grid && KillHubNodes.vbs " + machineID +  " && exit\""); // clearing node on remote Machine
+	    		 Thread.sleep(1300);
+	    		tempmachine.put(machineID, "");
+	    		 temphub.put(machineID, "");
+	    	}
+	    	griddata = null;
+		}
+	}
+	
+	//Usage: Restarting of Current Hub
+	public static void restartHub(String hub) throws IOException, InterruptedException{
+		try{
+		String currentcomputername=InetAddress.getLocalHost().getHostName();
+		 if(!hub.equalsIgnoreCase(currentcomputername)){
+			 clearHubandNodes(hub);
+			 startHub(hub);
+		 }
+		}catch(Exception e){
+			reportFail(e);
+		}
+	}
+
+	//Usage: Automatically Creates Hubs and Nodes on the desired machine as per the selected test cases from excel.  Users need to clean Local Hubs and Nodes Manually.
+	public static void  buildHubandNodes() throws Exception{
+    	
+		try{
+			
+	    	LinkedHashMap<String, String> FinalNodeslist = new LinkedHashMap<String, String>();
+	    	LinkedHashMap<String, Boolean> temphub = new LinkedHashMap<String, Boolean>();
+	    	LinkedHashMap<String, Boolean> nodehub = new LinkedHashMap<String, Boolean>();
+	    	FinalNodeslist = TestDataProvider.getHubandNodeData();
+	    	for( Entry<String, String> entry : FinalNodeslist.entrySet()){
+	    		boolean status =false;
+	    		
+		    	String osbrowserverision = entry.getKey().toString();
+		    	LinkedHashMap<String, String> griddata = new LinkedHashMap<String, String>();
+		    	griddata = TestDataProvider.getGridData(osbrowserverision);
+		    	String hub = griddata.get("Hub");
+		    	String machineID = griddata.get("Machine_ID");
+		    	if(!temphub.containsKey(hub)){
+		    		status = Grid_Builder.startHub(hub); //Creating Hub
+		    		temphub.put(hub, status);
+		    	}else if(temphub.containsKey(hub)) {
+		    		if(!temphub.get(hub)){
+		    			status = Grid_Builder.startHub(hub); //Creating Hub if its not success for the first time
+			    		temphub.put(hub, status);
+		    		}
+		    	}
+		    	
+		    	if(!nodehub.containsKey(machineID)){
+		    		executornodeinvoke.submit(new ConcurrentUpdates(hub,machineID,"node"));
+		    		nodehub.put(machineID, true);
+		    	}
+		    	griddata = null;
+			}
+	    	executornodeinvoke.shutdown();
+	    	 executornodeinvoke.awaitTermination(2, TimeUnit.MINUTES);
+		}catch(Exception e){
+			reportFail(e);
+		}
+    }
+	
+	//Usage: Restart of Nodes during test execution
+	public static void  restartNode(String hub,String machineID) throws Exception{
+		currentexecutionlog("Restarting Node: <B>"+machineID+"</B>");
+		String localMachine = java.net.InetAddress.getLocalHost().getHostName();  
+		
+		if(localMachine.equalsIgnoreCase(hub.split(":")[0])){
+//			Runtime.getRuntime().exec("taskkill /F /FI \"WINDOWTITLE eq Administrator:  node*\"");// clearing node on local machine
+//			Runtime.getRuntime().exec("taskkill /F /FI \"WINDOWTITLE eq node*\"");// clearing node on local machine
+//			 Grid_Builder.startNode(hub,machineID,true);
+//			 Thread.sleep(2000);
+		}else{
+			 Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd grid && KillHubNodes.vbs " + machineID +  " && exit\""); // clearing node on remote Machine
+			 Grid_Builder.startNode(hub,machineID,true);
+			 Thread.sleep(2000);
+		}
+	}
+	
+}
