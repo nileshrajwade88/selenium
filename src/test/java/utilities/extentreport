@@ -1,0 +1,162 @@
+package com.pru.utilities;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.testng.Assert;
+import org.testng.ITestResult;
+import org.testng.Reporter;
+import org.testng.annotations.Parameters;
+
+import com.pru.testscripts.BaseTest;
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
+
+
+public class ExtentReport extends TestBase {
+
+	public static ExtentReports extentReport;
+	public static ExtentReports extentLogger;
+	public static ExtentTest Report;
+	public static ExtentTest Logger;	
+	public static String ReportPath;
+
+	public void initiateReport(String ReportName){
+		//Initialize Report
+		ReportPath=System.getProperty("user.dir")+"/test-output/extentReport/"+ReportName+".html";
+		extentReport = new ExtentReports(ReportPath,true);
+		extentReport.addSystemInfo("HostName", "Preeti")
+		.addSystemInfo("Environment", "REG1");
+		extentReport.loadConfig(new File(System.getProperty("user.dir")+"\\test-output\\extentReport\\extent-config.xml"));
+
+		//Initialize Log
+		extentLogger = new ExtentReports(System.getProperty("user.dir")+"/test-output/extentReport/ApplicationLog.html", true);
+		Logger = extentLogger.startTest("ApplicationLog");
+	}
+
+	public void startTestReport(String testName){
+		Report = extentReport.startTest(testName);	
+		failStepCount=0;
+	}
+
+	public static void endTestReport(ITestResult result, WebDriver driver) throws IOException{
+		if(result.getStatus()==ITestResult.FAILURE)
+		{
+			Report.log(LogStatus.FAIL, result.getThrowable());
+			String screenShotPath = capture(driver, getDateTimeStamp());
+			Report.log(LogStatus.FAIL, result.getThrowable());
+			Report.log(LogStatus.FAIL, "Screenshot below: " + Report.addScreenCapture(screenShotPath));
+		}
+		if(failStepCount>0){
+			totalFailed = totalFailed + 1;
+		}else{totalPassed = totalPassed + 1;}
+		
+		extentReport.endTest(Report);
+		extentReport.flush();	
+	}
+
+	public static String getDateTimeStamp(){		
+		String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+		return timeStamp;
+	}
+
+	public void closeReport(){
+		extentLogger.endTest(Logger);
+		extentLogger.flush();
+		extentLogger.close();
+	}
+
+	public static void reportPass(String message){
+		System.out.println("PASS: "+ message);
+		Report.log(LogStatus.PASS, message);
+		Logger.log(LogStatus.INFO, message );
+	}
+
+	public static void reportFail(String message, WebDriver sourceElement, String screenShotName,String TestId) throws IOException, InterruptedException{
+		String screenShot;
+		System.out.println("report reportFail");
+		failStepCount = failStepCount + 1;
+		System.out.println("failStepCount : " + failStepCount);
+		DateFormat dateFormat = new SimpleDateFormat("dd_MMM_yyyy_hh_mm_ss_aa");
+		Date date = new Date();
+		screenShotName = getTestCaseName().split(":")[0]+"_"+screenShotName+"_"+dateFormat.format(date); 
+		Report.log(LogStatus.FAIL,  message);
+		Logger.log(LogStatus.INFO,  message );
+		System.out.println("report reportFail");
+		screenShot = capture(sourceElement, screenShotName);
+		System.out.println("reportFail");
+		System.out.println("report reportFail");
+		Report.log(LogStatus.FAIL, "ScreenShot Below: " + Report.addScreenCapture(screenShot));
+		BaseTest.afterMethod(Reporter.getCurrentTestResult() ,TestId);
+		Assert.fail("Test Case faled");
+	}
+	
+
+	public static void reportFail(String message, String TestId) throws InterruptedException, IOException {
+		// TODO Auto-generated method stub
+		//System.out.println(TestCaseID);
+		System.out.println("FAIL: "+ message);
+		Report.log(LogStatus.FAIL , message);
+		failStepCount = failStepCount + 1;
+		System.out.println("failStepCount : " + failStepCount);
+		Logger.log(LogStatus.INFO,  message );
+		BaseTest.afterMethod(Reporter.getCurrentTestResult() ,TestId);
+		//failedReport(Reporter.getCurrentTestResult() ,TestId);		
+		//driver.quit();
+		Assert.fail("Test Case faled");	
+	}
+
+	public static void reportFail(String message){
+		System.out.println("FAIL: "+ message);
+		Report.log(LogStatus.FAIL,  message);
+		failStepCount = failStepCount + 1;
+		System.out.println("failStepCount : " + failStepCount);
+		Logger.log(LogStatus.INFO,  message );
+		//afterMethod(ITestResult result,String TestId)
+		Assert.fail("Test Case faled");
+	}
+
+	public static void reportFail(Exception e){
+		System.out.println("FAIL: "+ e);
+		Report.log(LogStatus.FAIL, e);
+		failStepCount = failStepCount + 1;
+		System.out.println("failStepCount : " + failStepCount);
+		Logger.log(LogStatus.INFO, e );
+		Assert.fail("Test Case faled");
+	}
+
+	public static void reportInfo(String message){
+		System.out.println("Info: " + message);
+		Report.log(LogStatus.INFO,  message);
+		Logger.log(LogStatus.INFO,  message );	
+	}	
+
+	public static String capture(WebDriver driver ,String screenShotName) throws IOException
+	{
+		System.out.println("sheetshotName -> " + screenShotName);
+		System.out.println("page title -> " + driver.getTitle());	
+		TakesScreenshot ts = (TakesScreenshot)driver;
+		File source = ts.getScreenshotAs(OutputType.FILE);
+		String dest = System.getProperty("user.dir") +"\\screenshots\\"+screenShotName+".png";
+		System.out.println("dest : " + dest);
+		File destination = new File(dest);
+		FileUtils.copyFile(source, destination);        
+		return dest;
+	}
+
+	public static void reportInfo(Exception e) {
+		// TODO Auto-generated method stub
+		System.out.println("Info: " + e);
+		Report.log(LogStatus.INFO,  e);
+		Logger.log(LogStatus.INFO,  e );		
+	}
+	
+}
