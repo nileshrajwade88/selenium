@@ -1,0 +1,162 @@
+package com.pru.utilities;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class ConfigProperties extends ExtentReport{
+
+	static public String configFile = "test-settings//test-config.properties";
+	public static String TestDataFolderPath;
+	public static String ObjectPropertiesFolderPath;
+	public static String TestDataXml;
+	public static String testName;
+	public static String testIdHeader;
+	public static String testMethodNameHeader;
+	public static String testClassHeader;
+	public static String testosbrowserVersion;
+	public static String AutomationPack;
+	public static String RegressionPackBrowser;
+	public static String concurentthread;
+	public static String sendEmail;
+	public static String Emailfrom;
+	public static String Emailtolist;
+	public static String ScreenShotFolder;
+	public static String objectrepo;
+	public static String CurrentexecutionlogPath;
+	public static String CurrentexecutionHtml;
+	public static String CurrentExtentReportPath;
+	public static String CurrentPublishReportHtml;	
+	public static String CurrentAuthorReportHtml;
+	public static String CurrentApplicationLogHtml;
+	public static String DashBoardResultsFolder;
+	public static int explicitwait;
+	public static String Seleniumgridjar;
+	public static boolean CloudTesting;
+	public static String BuildRelease;
+	public static String Cycle;
+	public static String ProjectName;
+	public static boolean Takescreenwisesnapshot;
+	public static boolean RetriveObjdata;
+	public static String HTMLSharedLocation;
+	public static String TestExecution;
+	public static String nodePolling;
+	public static String cleanUpCycle;
+	public static String Environment;
+	public static String AgencyNumber;
+	public static String PruWelth_Web_REG_URL;	
+	public static String PruWelth_Web_REG_UsrID;
+	public static String PruWelth_Web_REG_Pwd;
+	public static String PruWelth_Web_SYS2_URL;
+	public static String PruWelth_Web_SYS2_UsrID;
+	public static String PruWelth_Web_SYS2_Pwd;
+	public static String PruWelth_Web_SYS3_URL;
+	public static String PruWelth_Web_SYS3_UsrID;
+	public static String PruWelth_Web_SYS3_Pwd;
+	public static String Pin;
+	public static String clientDetailsSheet;
+	public static String accountDetailsSheet;
+	public static String AppURL;
+	public static String UserID;
+	public static String Password;
+	public static String WorkSmart_UserID;
+	public static String WorkSmart_Password;	
+
+	ConfigProperties(){
+		if (TestDataFolderPath==null){
+			loadProperties();	
+			setEnvironmetSetting();
+		}
+	}
+
+	private static void loadProperties(){
+		try{
+			Properties cp = new Properties();
+			InputStream input = new FileInputStream(configFile);
+			cp.load(input);
+
+			TestDataFolderPath= cp.getProperty("TestDataFolderPath");
+			ObjectPropertiesFolderPath= cp.getProperty("ObjectPropertiesFolderPath");
+			TestDataXml= cp.getProperty("TestDataXml");
+			testName= cp.getProperty("testName");
+			testIdHeader= cp.getProperty("testIdHeader");
+			testMethodNameHeader= cp.getProperty("testMethodNameHeader");
+			testClassHeader= cp.getProperty("testClassHeader");
+			testosbrowserVersion= cp.getProperty("testosbrowserVersion");
+			AutomationPack= cp.getProperty("AutomationPack");
+			RegressionPackBrowser= cp.getProperty("RegressionPackBrowser");
+			concurentthread= cp.getProperty("concurentthread");
+			sendEmail= cp.getProperty("sendEmail");
+			Emailfrom= cp.getProperty("Emailfrom");
+			Emailtolist= cp.getProperty("Emailtolist");
+			ScreenShotFolder= cp.getProperty("ScreenShotFolder");
+			objectrepo= cp.getProperty("objectrepo");
+			CurrentexecutionlogPath= cp.getProperty("CurrentexecutionlogPath");
+			CurrentexecutionHtml= cp.getProperty("CurrentexecutionHtml");
+			CurrentExtentReportPath= cp.getProperty("CurrentExtentReportPath");
+			CurrentPublishReportHtml= cp.getProperty("CurrentPublishReportHtml");
+			CurrentAuthorReportHtml= cp.getProperty("CurrentAuthorReportHtml");
+			DashBoardResultsFolder= cp.getProperty("DashBoardResultsFolder");
+			explicitwait = Integer.parseInt(cp.getProperty("explicitwait").trim());
+			Seleniumgridjar= cp.getProperty("Seleniumgridjar");
+			CloudTesting= Boolean.parseBoolean(cp.getProperty("CloudTesting"));
+			BuildRelease= cp.getProperty("BuildRelease");
+			Cycle= cp.getProperty("Cycle");
+			ProjectName= cp.getProperty("ProjectName");
+			Takescreenwisesnapshot=  Boolean.parseBoolean(cp.getProperty("Takescreenwisesnapshot"));
+			RetriveObjdata=  Boolean.parseBoolean(cp.getProperty("RetriveObjdata"));
+			HTMLSharedLocation= cp.getProperty("HTMLSharedLocation");
+			TestExecution= cp.getProperty("TestExecution");
+			nodePolling= cp.getProperty("nodePolling");
+			cleanUpCycle= cp.getProperty("cleanUpCycle");
+			Environment = cp.getProperty("Environment");
+			PruWelth_Web_REG_URL= cp.getProperty("PruWelth_Web_REG_URL");
+			PruWelth_Web_REG_UsrID= cp.getProperty("PruWelth_Web_REG_UsrID");
+			PruWelth_Web_REG_Pwd= cp.getProperty("PruWelth_Web_REG_Pwd");			
+			PruWelth_Web_SYS2_URL= cp.getProperty("PruWelth_Web_SYS2_URL");
+			PruWelth_Web_SYS2_UsrID= cp.getProperty("PruWelth_Web_SYS2_UsrID");
+			PruWelth_Web_SYS2_Pwd= cp.getProperty("PruWelth_Web_SYS2_Pwd");
+			PruWelth_Web_SYS3_URL= cp.getProperty("PruWelth_Web_SYS3_URL");
+			PruWelth_Web_SYS3_UsrID= cp.getProperty("PruWelth_Web_SYS3_UsrID");	
+			PruWelth_Web_SYS3_Pwd= cp.getProperty("PruWelth_Web_SYS3_Pwd");	
+			clientDetailsSheet = cp.getProperty("clientDetailsSheet");
+			accountDetailsSheet = cp.getProperty("accountDetailsSheet");
+			AgencyNumber = cp.getProperty("AgencyNumber");
+			Pin = cp.getProperty("Pin");
+			WorkSmart_UserID = cp.getProperty("WorkSmart_UserID");
+			WorkSmart_Password = cp.getProperty("WorkSmart_Password");			
+			
+		}catch(Exception e){
+			reportFail("Error displayed while loading ConfigFile" + e);
+			System.out.println("Error displayed while loading ConfigFile" );
+			System.out.println(e);
+		}
+	}
+
+	
+		private static void setEnvironmetSetting() {
+		// TODO Auto-generated method stub
+		try{
+			if (Environment.equalsIgnoreCase("REG")){
+				AppURL = PruWelth_Web_REG_URL;
+				UserID = PruWelth_Web_REG_UsrID;
+				Password = PruWelth_Web_REG_Pwd;
+			}else if (Environment.equalsIgnoreCase("SYS2")){
+				AppURL = PruWelth_Web_SYS2_URL;
+				UserID = PruWelth_Web_SYS2_UsrID;
+				Password = PruWelth_Web_SYS2_Pwd;
+			}else if (Environment.equalsIgnoreCase("SYS3")){
+				AppURL = PruWelth_Web_SYS3_URL;
+				UserID = PruWelth_Web_SYS3_UsrID;
+				Password = PruWelth_Web_SYS3_Pwd;
+			}
+			
+		}catch(Exception e){
+			reportFail("Error displayed while setting Enviroment" + e);
+			System.out.println("Error displayed while setting Enviroment" );
+			System.out.println(e);
+		}
+	}
+
+
+}
