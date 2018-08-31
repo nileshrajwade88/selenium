@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="My Test Suite" parallel="tests" thread-count="4"
+	group-by-instances="true">
+	<listeners>
+		<listener class-name="org.uncommons.reportng.HTMLReporter" />
+		<listener class-name="org.uncommons.reportng.JUnitXMLReporter" />
+		<listener class-name="listener.TestSuiteListener" />
+	</listeners>
+	<test name="Author_Homepage01 : HomePageTest1_1 - B13_WINDOW7_IE_11">
+		<classes>
+			<class name="test.com.pru.testscripts.author.HomePageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B13_WINDOW7_IE_11" />
+					<parameter name="TestId" value="Author_Homepage01" />
+					<include name="HomePageTest1_1" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="Author_Homepage02 : HomePageTest2_1 - B13_WINDOW7_IE_11">
+		<classes>
+			<class name="test.com.pru.testscripts.author.HomePageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B13_WINDOW7_IE_11" />
+					<parameter name="TestId" value="Author_Homepage02" />
+					<include name="HomePageTest2_1" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="Author_Homepage03 : HomePageTest2_2 - B19_WINDOW7_IE_11">
+		<classes>
+			<class name="test.com.pru.testscripts.author.HomePageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B19_WINDOW7_IE_11" />
+					<parameter name="TestId" value="Author_Homepage03" />
+					<include name="HomePageTest2_2" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test
+		name="Published_HomePage01 : VerifyHomePageTitle - B01_WINDOW8.1_IE_11">
+		<classes>
+			<class name="test.com.pru.testscripts.published.HomePageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B01_WINDOW8.1_IE_11" />
+					<parameter name="TestId" value="Published_HomePage01" />
+					<include name="VerifyHomePageTitle" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="Published_HomePage02 : VerifyHeaderLinks - B42_WINDOW10_IE_11">
+		<classes>
+			<class name="test.com.pru.testscripts.published.HomePageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B42_WINDOW10_IE_11" />
+					<parameter name="TestId" value="Published_HomePage02" />
+					<include name="VerifyHeaderLinks" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="Published_HomePage03 : VerifyMainTabs - B13_WINDOW7_IE_11">
+		<classes>
+			<class name="test.com.pru.testscripts.published.HomePageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B13_WINDOW7_IE_11" />
+					<parameter name="TestId" value="Published_HomePage03" />
+					<include name="VerifyMainTabs" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="Published_HomePage04 : VerifyTABSLinks - B19_WINDOW7_IE_11">
+		<classes>
+			<class name="test.com.pru.testscripts.published.HomePageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B19_WINDOW7_IE_11" />
+					<parameter name="TestId" value="Published_HomePage04" />
+					<include name="VerifyTABSLinks" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test
+		name="Published_Retirement01 : VerifySaveYourRetirementPageTitle - B19_WINDOW7_IE_11">
+		<classes>
+			<class
+				name="test.com.pru.testscripts.published.SaveForYourRetirementPageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B19_WINDOW7_IE_11" />
+					<parameter name="TestId" value="Published_Retirement01" />
+					<include name="VerifySaveYourRetirementPageTitle" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test
+		name="Published_Retirement02 : VerifySaveYourRetirementPagePageHeader - B01_WINDOW8.1_IE_11">
+		<classes>
+			<class
+				name="test.com.pru.testscripts.published.SaveForYourRetirementPageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B01_WINDOW8.1_IE_11" />
+					<parameter name="TestId" value="Published_Retirement02" />
+					<include name="VerifySaveYourRetirementPagePageHeader" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test
+		name="Published_Retirement03 : VerifySaveYourRetirementPageImageHeader - B42_WINDOW10_IE_11">
+		<classes>
+			<class
+				name="test.com.pru.testscripts.published.SaveForYourRetirementPageTest">
+				<methods>
+					<parameter name="osbrowserVersion" value="B42_WINDOW10_IE_11" />
+					<parameter name="TestId" value="Published_Retirement03" />
+					<include name="VerifySaveYourRetirementPageImageHeader" />
+				</methods>
+			</class>
+		</classes>
+	</test>
+</suite>
