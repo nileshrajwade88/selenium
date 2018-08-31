@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" ><suite name="My Test Suite" parallel="tests" thread-count="1" group-by-instances="true">
+<listeners>
+<listener class-name="org.uncommons.reportng.HTMLReporter"/>
+ <listener class-name="org.uncommons.reportng.JUnitXMLReporter"/><listener class-name="com.pru.utilities.TestSuiteListener" />
+</listeners>
+<test name="PruWealth_TC_001 : Calcs_Illustr_TC07 - L1409_WINDOW7_IE_11">
+<classes>
+<class name="com.pru.testscripts.PruWealth_InitialStage">
+<methods>
+<parameter name="osbrowserVersion" value="L1409_WINDOW7_IE_11"/> 
+<parameter name="TestId" value="PruWealth_TC_001"/>
+<include name="Calcs_Illustr_TC07"/>
+</methods>
+</class>
+</classes>
+</test>
+<test name="PruWealth_TC_002 : Calcs_Illustr_TC11 - L1409_WINDOW7_IE_11">
+<classes>
+<class name="com.pru.testscripts.PruWealth_InitialStage">
+<methods>
+<parameter name="osbrowserVersion" value="L1409_WINDOW7_IE_11"/> 
+<parameter name="TestId" value="PruWealth_TC_002"/>
+<include name="Calcs_Illustr_TC11"/>
+</methods>
+</class>
+</classes>
+</test>
+<test name="PruWealth_TC_003 : Calcs_Illustr_TC13 - L1409_WINDOW7_IE_11">
+<classes>
+<class name="com.pru.testscripts.PruWealth_InitialStage">
+<methods>
+<parameter name="osbrowserVersion" value="L1409_WINDOW7_IE_11"/> 
+<parameter name="TestId" value="PruWealth_TC_003"/>
+<include name="Calcs_Illustr_TC13"/>
+</methods>
+</class>
+</classes>
+</test>
+</suite>
