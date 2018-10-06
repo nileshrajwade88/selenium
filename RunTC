@@ -1,0 +1,48 @@
+package testCase;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+
+import utility.Constant;
+import utility.ExcelUtils;
+
+public class RunTC {
+	static WebDriver driver;
+	@FindBy(id = "getquotesearch")
+	static WebElement Getquotesearch;
+
+	@FindBy(id = "idcrval")
+	static WebElement Value;
+
+	public static void main(String[] args) throws Exception, InterruptedException {
+		ExcelUtils.setExcelFile(Constant.Path_TestData + Constant.File_TestData, "Sheet1");
+		int rowCount = ExcelUtils.getRowCount("Sheet1");
+		System.setProperty("webdriver.chrome.driver",
+				"E:\\eclipse-jee-neon-3-win32-x86_64\\software\\chromedriver.exe");
+		driver = new ChromeDriver();
+
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		driver.manage().window().maximize();
+
+		driver.get(Constant.Url);
+		for (int i = 1; i < rowCount; i++) {
+
+			String sCode = ExcelUtils.getCellData(i, 1);
+
+			PageFactory.initElements(driver, RunTC.class);
+			Getquotesearch.sendKeys(sCode);
+			Getquotesearch.sendKeys(Keys.ENTER);
+			String sValue = Value.getText();
+			//Output
+			ExcelUtils.setCellData(sValue, i, 2);
+		}
+		driver.quit();
+	}
+
+}
